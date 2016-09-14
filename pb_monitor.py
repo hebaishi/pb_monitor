@@ -41,18 +41,20 @@ class PushBulletMonitor(object):
         """
         current_time = time.time()
         while True:
-            time.sleep(self.refresh_interval)
-            pushes_list = pybullet.get_pushes(current_time, True, self.access_token)
-            if pushes_list:
-                pushes_data = json.loads(pushes_list)["pushes"]
+            try:
+                time.sleep(self.refresh_interval)
+                pushes_list = pybullet.get_pushes(current_time, True, self.access_token)
+                if pushes_list:
+                    pushes_data = json.loads(pushes_list)["pushes"]
 
-                for idx in range(len(pushes_data)-1, -1, -1):
-                    print idx
-                    if pushes_data[idx]["sender_email"] == self.sender_email and pushes_data[idx]["type"] == "note" and pushes_data[idx]["body"] == self.sender_command:
-                        temp_filename = self._new_image()
-                        pybullet.push_file(temp_filename, "Snapshot.jpg", "Snapshot", self.access_token)
-                        os.remove(temp_filename)
-                        current_time = time.time()
+                    for idx in range(len(pushes_data)-1, -1, -1):
+                        if pushes_data[idx]["sender_email"] == self.sender_email and pushes_data[idx]["type"] == "note" and pushes_data[idx]["body"] == self.sender_command:
+                            temp_filename = self._new_image()
+                            pybullet.push_file(temp_filename, "Snapshot.jpg", "Snapshot", self.access_token)
+                            os.remove(temp_filename)
+                            current_time = time.time()
+            except KeyError:
+                pass
 
 if __name__ == "__main__":
     parser = OptionParser()
