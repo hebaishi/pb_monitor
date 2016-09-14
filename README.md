@@ -4,6 +4,8 @@ Simply set the parameters in ```config.json``` and run the script by doing:
 ```bash
 pb_monitor.py -c conf.json
 ```
+## Configuration options
+
 |     Value      |              Description                 |
 |----------------|------------------------------------------|             
 |access_token     | Pushbullet API Access Token             |
