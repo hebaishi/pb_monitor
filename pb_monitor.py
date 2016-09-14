@@ -36,6 +36,9 @@ class PushBulletMonitor(object):
         return filename
 
     def run(self):
+        """
+        Main function to run monitor
+        """
         current_time = time.time()
         while True:
             time.sleep(self.refresh_interval)
@@ -56,7 +59,6 @@ if __name__ == "__main__":
     parser.add_option("-c", "--config-file", dest="config_filename",
                       help="Path to configuration JSON file", type="string")
     (options, args) = parser.parse_args()
-
 
     config_file = open(options.config_filename, "r")
     config = json.loads(config_file.read())
