@@ -8,6 +8,7 @@ from datetime import datetime
 import time
 from PIL import Image
 import pybullet
+import urllib2
 
 from optparse import OptionParser
 
@@ -45,18 +46,31 @@ class PushBulletMonitor(object):
                 time.sleep(self.refresh_interval)
                 pushes_list = pybullet.get_pushes(current_time, True, self.access_token)
                 if pushes_list:
+                    print "Getting pushes"
                     pushes_data = json.loads(pushes_list)["pushes"]
 
-                    for idx in range(len(pushes_data)-1, -1, -1):
+                    for idx in range(0, len(pushes_data)):
+                        print pushes_data[idx]["sender_email"], pushes_data[idx]["type"], pushes_data[idx]["body"]
                         if pushes_data[idx]["sender_email"] == self.sender_email and pushes_data[idx]["type"] == "note" and pushes_data[idx]["body"] == self.sender_command:
+                            current_time = time.time()
                             temp_filename = self._new_image()
                             pybullet.push_file(temp_filename, "Snapshot.jpg", "Snapshot", self.access_token)
                             os.remove(temp_filename)
-                            current_time = time.time()
-            except KeyError:
+            except KeyboardInterrupt:
+                exit()
+            except:
                 pass
 
+def wait_for_internet_connection():
+    while True:
+        try:
+            response = urllib2.urlopen('http://www.google.com',timeout=1)
+            return
+        except urllib2.URLError:
+            pass
+
 if __name__ == "__main__":
+    wait_for_internet_connection()
     parser = OptionParser()
     parser.add_option("-c", "--config-file", dest="config_filename",
                       help="Path to configuration JSON file", type="string")
