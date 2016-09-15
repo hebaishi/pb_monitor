@@ -1,0 +1,10 @@
+[Unit]
+Description=pb_monitor
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/usr/bin/python /path/to/pb_monitor.py -c /path/to/conf.json
+
+[Install]
+WantedBy=multi-user.target
