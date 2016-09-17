@@ -2,6 +2,17 @@
   "access_token": "PUSHBULLET_ACCESS_TOKEN",
   "refresh_interval": 5,
   "sender_email": "your.email@domain.com",
-  "sender_command": "snap",
-  "temp_folder": "/tmp/"
+  "temp_folder": "/tmp/",
+  "commands": [
+    {
+      "command_name": "snaphi",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "command_name": "snaplo",
+      "width": 1280,
+      "height": 720
+    }
+  ]
 }

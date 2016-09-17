@@ -13,25 +13,25 @@ import urllib2
 from optparse import OptionParser
 
 class PushBulletMonitor(object):
-    def __init__(self, access_token, refresh_interval, sender_email, sender_command, temp_folder):
+    def __init__(self, config):
         """
         Initialisation function
         """
-        self.access_token = access_token
-        self.refresh_interval = refresh_interval
-        self.sender_email = sender_email
-        self.sender_command = sender_command
-        self.temp_folder = temp_folder
+        self.access_token = config["access_token"]
+        self.refresh_interval = config["refresh_interval"]
+        self.sender_email = config["sender_email"]
+        self.temp_folder = config["temp_folder"]
+        self.commands = config["commands"]
         self.camera = picamera.PiCamera()
 
-    def _new_image(self):
+    def _new_image(self, width, height):
         """
         Internal function to capture a new image
         """
         time = datetime.now()
         filename = self.temp_folder
-        filename += "motion-%04d%02d%02d-%02d%02d%02d.jpg" % (time.year, time.month, time.day, time.hour, time.minute, time.second)
-        self.camera.resolution = (1920, 1080)
+        filename += "pb_monitor-%04d%02d%02d-%02d%02d%02d.jpg" % (time.year, time.month, time.day, time.hour, time.minute, time.second)
+        self.camera.resolution = (width, height)
         self.camera.capture(filename)
         print "Captured %s" % filename
         return filename
@@ -47,15 +47,16 @@ class PushBulletMonitor(object):
                 pushes_list = pybullet.get_pushes(current_time, True, self.access_token)
                 if pushes_list:
                     print "Getting pushes"
-                    pushes_data = json.loads(pushes_list)["pushes"]
+                    pushes = json.loads(pushes_list)["pushes"]
 
-                    for idx in range(0, len(pushes_data)):
-                        print pushes_data[idx]["sender_email"], pushes_data[idx]["type"], pushes_data[idx]["body"]
-                        if pushes_data[idx]["sender_email"] == self.sender_email and pushes_data[idx]["type"] == "note" and pushes_data[idx]["body"] == self.sender_command:
-                            current_time = time.time()
-                            temp_filename = self._new_image()
-                            pybullet.push_file(temp_filename, "Snapshot.jpg", "Snapshot", self.access_token)
-                            os.remove(temp_filename)
+                    for push in pushes:
+                        if push["sender_email"] == self.sender_email and push["type"] == "note":
+                            for command in self.commands:
+                                if push["body"] == command["command_name"]:
+                                    current_time = time.time()
+                                    temp_filename = self._new_image(command["width"], command["height"])
+                                    pybullet.push_file(temp_filename, "Snapshot.jpg", "Snapshot", self.access_token)
+                                    os.remove(temp_filename)
             except KeyboardInterrupt:
                 exit()
             except:
@@ -64,7 +65,7 @@ class PushBulletMonitor(object):
 def wait_for_internet_connection():
     while True:
         try:
-            response = urllib2.urlopen('http://www.google.com',timeout=1)
+            response = urllib2.urlopen('http://www.google.com',timeout=5)
             return
         except urllib2.URLError:
             pass
@@ -78,11 +79,5 @@ if __name__ == "__main__":
 
     config_file = open(options.config_filename, "r")
     config = json.loads(config_file.read())
-    monitor = PushBulletMonitor(
-        config["access_token"],
-        config["refresh_interval"],
-        config["sender_email"],
-        config["sender_command"],
-        config["temp_folder"]
-    )
+    monitor = PushBulletMonitor(config)
     monitor.run()
