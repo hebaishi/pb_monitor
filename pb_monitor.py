@@ -48,11 +48,15 @@ class PushBulletMonitor(object):
                 if pushes_list:
                     print "Getting pushes"
                     pushes = json.loads(pushes_list)["pushes"]
+                    push_recognized = False
 
                     for push in pushes:
-                        if push["sender_email"] == self.sender_email and push["type"] == "note":
+                        if push_recognized:
+                            break
+                        elif push["sender_email"] == self.sender_email and push["type"] == "note":
                             for command in self.commands:
                                 if push["body"] == command["command_name"]:
+                                    push_recognized = True
                                     current_time = time.time()
                                     temp_filename = self._new_image(command["width"], command["height"])
                                     pybullet.push_file(temp_filename, "Snapshot.jpg", datetime.now().strftime("Snapshot taken on %d-%b-%Y at %H:%M %p"), self.access_token)
