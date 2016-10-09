@@ -55,7 +55,7 @@ class PushBulletMonitor(object):
                                 if push["body"] == command["command_name"]:
                                     current_time = time.time()
                                     temp_filename = self._new_image(command["width"], command["height"])
-                                    pybullet.push_file(temp_filename, "Snapshot.jpg", "Snapshot", self.access_token)
+                                    pybullet.push_file(temp_filename, "Snapshot.jpg", datetime.now().strftime("Snapshot taken on %d-%b-%Y at %H:%M %p"), self.access_token)
                                     os.remove(temp_filename)
             except KeyboardInterrupt:
                 exit()
